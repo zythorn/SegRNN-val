@@ -23,9 +23,9 @@ class ETTDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx: int) -> list[list[torch.Tensor, torch.Tensor]]:
         item = []
         for column in self.data.columns:
-            class_data = torch.tensor(self.data[column].values)
-            class_input, class_output = self._roll_window(class_data, idx)
-            item.append([class_input, class_output])
+            channel_data = torch.tensor(self.data[column].values)
+            channel_input, channel_output = self._roll_window(channel_data, idx)
+            item.append([channel_input, channel_output])
         
         return item
 
