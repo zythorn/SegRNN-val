@@ -4,5 +4,6 @@
     "HORIZON": 720,
     "SEGMENT_LENGTH": 48,
     "HIDDEN_DIM": 512,
-    "EPOCHS": 30
+    "EPOCHS": 30,
+    "DEVICE": "cuda"
 }

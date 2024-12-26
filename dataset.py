@@ -10,29 +10,32 @@ class ETTDataset(torch.utils.data.Dataset):
         super().__init__()
 
         path_to_data = Path(f"data/ETT{subset}.csv")
-        self.data = pd.read_csv(path_to_data)
-        self.data["date"] = pd.to_datetime(self.data["date"])
+        self.data = self._load_data_split(path_to_data, split)
+
+        self.input_window = input_window
+        self.output_window = output_window
+
+    def _load_data_split(self, path: Path, split: str) -> pd.DataFrame:
+        data = pd.read_csv(path)
+        data["date"] = pd.to_datetime(data["date"])
 
         match split:
             case "train":
                 # Only take first 12 months of data
                 train_deadline = datetime.strptime("2017-07-01 00:00:00", TIME_FORMAT)
-                self.data = self.data.drop(self.data[self.data["date"] >= train_deadline].index)
+                data = data.drop(data[data["date"] >= train_deadline].index)
             case "val":
                 # Only take months 13 to 16 of data
                 train_deadline = datetime.strptime("2017-07-01 00:00:00", TIME_FORMAT)
                 val_deadline = datetime.strptime("2017-11-01 00:00:00", TIME_FORMAT)
-                self.data = self.data.drop(self.data[self.data["date"] < train_deadline].index)
-                self.data = self.data.drop(self.data[self.data["date"] >= val_deadline].index)
+                data = data.drop(data[data["date"] < train_deadline].index)
+                data = data.drop(data[data["date"] >= val_deadline].index)
             case "test":
                 # Only take moths 17 and later of data
                 val_deadline = datetime.strptime("2017-11-01 00:00:00", TIME_FORMAT)
-                self.data = self.data.drop(self.data[self.data["date"] < val_deadline].index)
+                data = data.drop(data[data["date"] < val_deadline].index)
 
-        self.data = self.data.drop(columns=["date"])
-
-        self.input_window = input_window
-        self.output_window = output_window
+        return data.drop(columns=["date"])
 
     def _roll_window(self, data_column: torch.Tensor, start: int) -> tuple[torch.Tensor, torch.Tensor]:
         input_data = data_column[start:(start + self.input_window)]

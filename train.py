@@ -6,7 +6,8 @@ def train(model: torch.nn.Module,
           train_data: torch.utils.data.Dataset,
           val_data: torch.utils.data.Dataset,
           loss_fn: torch.nn.Module,
-          epochs: int) -> None:
+          epochs: int,
+          device: torch.device) -> None:
     
     print("Initiating trainig...")
     for epoch in tqdm(range(epochs)):
@@ -14,7 +15,7 @@ def train(model: torch.nn.Module,
         model.train()
         for data_window in tqdm(train_data):
             for channel, channel_data in enumerate(data_window):
-                data_in, data_out = channel_data[0], channel_data[1]
+                data_in, data_out = channel_data[0].to(device), channel_data[1].to(device)
                 # Instance normalization is performed:
                 # x[1:L] = x[1:L] - x[L]
                 # y_pred[1:L] = y_pred[1:L] + x[L]
@@ -32,7 +33,7 @@ def train(model: torch.nn.Module,
         model.eval()
         for data_window in tqdm(val_data):
             for channel, channel_data in enumerate(data_window):
-                data_in, data_out = channel_data[0], channel_data[1]
+                data_in, data_out = channel_data[0].to(device), channel_data[1].to(device)
                 # Instance normalization is performed:
                 # x[1:L] = x[1:L] - x[L]
                 # y_pred[1:L] = y_pred[1:L] + x[L]
