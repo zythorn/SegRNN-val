@@ -19,9 +19,12 @@ def eval(model: torch.nn.Module,
             for idx, criterion in enumerate(criteria):
                 scores[idx] += criterion(data_pred, data_out).cpu().item()
 
-    plt.plot(data_out[0, 6].cpu(), label='Ground Truth')
-    plt.plot(data_pred[0, 6].cpu(), label='Predicted')
-    plt.legend()
-    plt.savefig("plot.png")
+    for i in range(data_out.shape[1]):
+        plt.plot(torch.arange(720), data_in[5, i].cpu(), label='Input')
+        plt.plot(torch.arange(720, 1440), data_out[5, i].cpu(), label='Ground Truth')
+        plt.plot(torch.arange(720, 1440), data_pred[5, i].cpu(), label='Predicted')
+        plt.legend()
+        plt.savefig(f"plot{i}.png")
+        plt.close()
 
     return scores / len(test_loader)

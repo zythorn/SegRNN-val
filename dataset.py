@@ -2,6 +2,7 @@ from pathlib import Path
 from datetime import datetime
 import torch
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
@@ -19,14 +20,19 @@ class ETTDataset(torch.utils.data.Dataset):
         data = pd.read_csv(path)
         data["date"] = pd.to_datetime(data["date"])
 
+        train_deadline = datetime.strptime("2017-07-01 00:00:00", TIME_FORMAT)
+        train_data = data.drop(data[data["date"] >= train_deadline].index)
+        train_values = train_data.drop(columns=["date"])
+
+        scaler = StandardScaler()
+        scaler.fit(train_values.values)
+
         match split:
             case "train":
                 # Only take first 12 months of data
-                train_deadline = datetime.strptime("2017-07-01 00:00:00", TIME_FORMAT)
                 data = data.drop(data[data["date"] >= train_deadline].index)
             case "val":
                 # Only take months 13 to 16 of data
-                train_deadline = datetime.strptime("2017-07-01 00:00:00", TIME_FORMAT)
                 val_deadline = datetime.strptime("2017-11-01 00:00:00", TIME_FORMAT)
                 data = data.drop(data[data["date"] < train_deadline].index)
                 data = data.drop(data[data["date"] >= val_deadline].index)
@@ -35,7 +41,9 @@ class ETTDataset(torch.utils.data.Dataset):
                 val_deadline = datetime.strptime("2017-11-01 00:00:00", TIME_FORMAT)
                 data = data.drop(data[data["date"] < val_deadline].index)
 
-        return data.drop(columns=["date"])
+        data = data.drop(columns=["date"])
+        data_values = scaler.transform(data.values)
+        return pd.DataFrame(data_values, index=data.index, columns=data.columns)
 
     def _roll_window(self, data_column: torch.Tensor, start: int) -> tuple[torch.Tensor, torch.Tensor]:
         input_data = data_column[start:(start + self.input_window)]

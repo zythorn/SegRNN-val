@@ -80,7 +80,8 @@ class SegRNN(nn.Module):
         # Instance normalization is performed:
         # x[1:L] = x[1:L] - x[L]
         # y_pred[1:L] = y_pred[1:L] + x[L]
-        x_last = x[..., -1].unsqueeze(dim=-1)
+        x_last = x[..., -1:]
+        # x_last = torch.tile(x_last, (1, x.shape[-1]))
 
         # Encoding
         x = self.segment_projection(x - x_last) # [BC, N, D]

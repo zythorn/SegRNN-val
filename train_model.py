@@ -18,16 +18,16 @@ model = SegRNN(num_channels=config["CHANNELS"],
                hidden_dim=config["HIDDEN_DIM"],
                batch_size=config["BATCH_SIZE"]).to(device)
 
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-4)
 scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, 
-                                                 milestones=list(torch.arange(3, config["EPOCHS"])),
+                                                 milestones=list(torch.arange(4, config["EPOCHS"])),
                                                  gamma=0.8)
 
-train_data = ETTDataset("h1", "train", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
-val_data = ETTDataset("h1", "val", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
+train_data = ETTDataset("m2", "train", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
+val_data = ETTDataset("m2", "val", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
 
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=config["BATCH_SIZE"], drop_last=True)
-val_loader = torch.utils.data.DataLoader(val_data, batch_size=config["BATCH_SIZE"], drop_last=True)
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=config["BATCH_SIZE"], drop_last=True, shuffle=True)
+val_loader = torch.utils.data.DataLoader(val_data, batch_size=config["BATCH_SIZE"], drop_last=True, shuffle=True)
 
 loss_fn = torch.nn.L1Loss().to(device)
 
@@ -36,7 +36,7 @@ train(model, optimizer, scheduler, train_loader, val_loader, loss_fn, epochs=con
 criteria = [torch.nn.MSELoss(), torch.nn.L1Loss()]
 criteria_names = ["MSE", "MAE"]
 
-test_data = ETTDataset("h1", "test", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
+test_data = ETTDataset("m2", "test", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
 test_loader = torch.utils.data.DataLoader(test_data, batch_size=config["BATCH_SIZE"], drop_last=True)
 
 scores = eval(model, test_loader, criteria, device)
