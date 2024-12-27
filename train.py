@@ -2,7 +2,8 @@ import torch
 from tqdm import tqdm
 
 def train(model: torch.nn.Module,
-          optimizer: torch.optim.Optimizer, 
+          optimizer: torch.optim.Optimizer,
+          scheduler: torch.optim.lr_scheduler._LRScheduler,
           train_loader: torch.utils.data.DataLoader,
           val_loader: torch.utils.data.DataLoader,
           loss_fn: torch.nn.Module,
@@ -34,5 +35,7 @@ def train(model: torch.nn.Module,
             loss = loss_fn(data_pred, data_out)
             
             avg_val_loss += loss.cpu().item()
+
+        scheduler.step()
 
         print(f"Epoch {epoch}: train loss {(avg_train_loss / len(train_loader)):.6f}, validation loss {(avg_val_loss / len(val_loader)):.6f}.")

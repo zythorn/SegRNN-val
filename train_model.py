@@ -17,6 +17,9 @@ model = SegRNN(num_channels=config["CHANNELS"],
                hidden_dim=config["HIDDEN_DIM"]).to(device)
 
 optimizer = torch.optim.Adam(model.parameters())
+scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, 
+                                                 milestones=list(torch.arange(3, config["EPOCHS"])),
+                                                 gamma=0.8)
 
 train_data = ETTDataset("h1", "train", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
 val_data = ETTDataset("h1", "val", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
@@ -26,4 +29,4 @@ val_loader = torch.utils.data.DataLoader(val_data)
 
 loss_fn = torch.nn.L1Loss().to(device)
 
-train(model, optimizer, train_loader, val_loader, loss_fn, epochs=config["EPOCHS"], device=device)
+train(model, optimizer, scheduler, train_loader, val_loader, loss_fn, epochs=config["EPOCHS"], device=device)
