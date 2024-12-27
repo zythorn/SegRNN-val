@@ -19,15 +19,9 @@ def eval(model: torch.nn.Module,
             for idx, criterion in enumerate(criteria):
                 scores[idx] += criterion(data_pred, data_out).cpu().item()
 
-    plt.plot(data_out[0, 6], label='Ground Truth')
-    plt.plot(data_pred[0, 6], label='Predicted')
+    plt.plot(data_out[0, 6].cpu(), label='Ground Truth')
+    plt.plot(data_pred[0, 6].cpu(), label='Predicted')
     plt.legend()
     plt.savefig("plot.png")
 
     return scores / len(test_loader)
-
-def draw_prediction(model: torch.nn.Module,
-                    test_loader: torch.utils.data.DataLoader,
-                    sample_id: int,
-                    device: torch.device) -> None:
-    return
