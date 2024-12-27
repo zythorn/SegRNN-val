@@ -91,10 +91,10 @@ class SegRNN(nn.Module):
         pos_encodings = self.positional_embedding() # [C, M, D]
         pos_encodings = torch.reshape(pos_encodings, (1, -1, self.hidden_dim)) # [1, CM, D]
         pos_encodings = torch.tile(pos_encodings, (1, self.batch_size, 1)) # [1, BCM, D]
-        hidden_state = torch.tile(hidden_state, (1, self.num_segments_dec, 1)) # [1, BCM, D]
+        hidden_state = torch.repeat_interleave(hidden_state, self.num_segments_dec, dim=1) # [1, BCM, D]
 
         x, _ = self.rnn(pos_encodings, hidden_state) # [1, BCM, D]
-        x = torch.reshape(x, (-1, self.num_segments_dec, self.hidden_dim)) # [BC, M, W]
+        x = torch.reshape(x, (-1, self.num_segments_dec, self.hidden_dim)) # [BC, M, D]
         x = self.sequence_recovery(x) # [BC, H]
         # print(x.shape, x_last.shape)
         return (x + x_last).reshape(self.batch_size, self.num_channels, -1) # [B, C, H]
