@@ -3,7 +3,7 @@ import torch
 
 from model import SegRNN
 from dataset import ETTDataset
-from train import train
+from train import train, eval
 
 with open("config.json", 'r') as config_file:
     config = json.load(config_file)
@@ -31,3 +31,12 @@ val_loader = torch.utils.data.DataLoader(val_data, batch_size=config["BATCH_SIZE
 loss_fn = torch.nn.L1Loss().to(device)
 
 train(model, optimizer, scheduler, train_loader, val_loader, loss_fn, epochs=config["EPOCHS"], device=device)
+
+criteria = [torch.nn.MSELoss(), torch.nn.L1Loss()]
+criteria_names = ["MSE", "MAE"]
+
+test_data = ETTDataset("h1", "test", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
+test_loader = torch.utils.data.DataLoader(test_data, batch_size=config["BATCH_SIZE"], drop_last=True)
+
+scores = eval(model, test_loader, criteria, device)
+print(", ".join([f"{criterion_name} = {score}" for (criterion_name, score) in zip(criteria_names, scores)]))
