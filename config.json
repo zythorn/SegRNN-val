@@ -5,6 +5,6 @@
     "SEGMENT_LENGTH": 48,
     "HIDDEN_DIM": 512,
     "EPOCHS": 30,
-    "BATCH_SIZE": 4,
+    "BATCH_SIZE": 1,
     "DEVICE": "cuda"
 }
