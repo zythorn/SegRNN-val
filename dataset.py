@@ -48,7 +48,6 @@ class ETTDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         data_input, data_output = [], []
         for column in self.data.columns:
-            print(column)
             channel_data = torch.tensor(self.data[column].values)
             channel_input, channel_output = self._roll_window(channel_data, idx)
             data_input.append(channel_input.float())
