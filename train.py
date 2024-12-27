@@ -16,6 +16,7 @@ def train(model: torch.nn.Module,
         for data_in, data_out in tqdm(train_loader):
             optimizer.zero_grad()
 
+            data_in, data_out = data_in.to(device), data_out.to(device)
             data_pred = model(data_in)
 
             loss = loss_fn(data_pred, data_out.squeeze())
