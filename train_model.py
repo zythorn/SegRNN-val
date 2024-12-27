@@ -14,7 +14,8 @@ model = SegRNN(num_channels=config["CHANNELS"],
                lookback=config["LOOKBACK"],
                horizon=config["HORIZON"],
                window_length=config["SEGMENT_LENGTH"],
-               hidden_dim=config["HIDDEN_DIM"]).to(device)
+               hidden_dim=config["HIDDEN_DIM"],
+               batch_size=config["BATCH_SIZE"]).to(device)
 
 optimizer = torch.optim.Adam(model.parameters())
 scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, 
@@ -24,8 +25,8 @@ scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
 train_data = ETTDataset("h1", "train", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
 val_data = ETTDataset("h1", "val", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
 
-train_loader = torch.utils.data.DataLoader(train_data)
-val_loader = torch.utils.data.DataLoader(val_data)
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=config["BATCH_SIZE"])
+val_loader = torch.utils.data.DataLoader(val_data, batch_size=config["BATCH_SIZE"])
 
 loss_fn = torch.nn.L1Loss().to(device)
 

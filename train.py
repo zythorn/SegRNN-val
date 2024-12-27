@@ -32,7 +32,7 @@ def train(model: torch.nn.Module,
         for data_in, data_out in tqdm(val_loader):
             data_pred = model(data_in.to(device)).cpu()
 
-            loss = loss_fn(data_pred, data_out)
+            loss = loss_fn(data_pred, data_out.squeeze())
             
             avg_val_loss += loss.cpu().item()
 
