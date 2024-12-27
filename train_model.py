@@ -24,6 +24,6 @@ val_data = ETTDataset("h1", "val", input_window=config["LOOKBACK"], output_windo
 train_loader = torch.utils.data.DataLoader(train_data)
 val_loader = torch.utils.data.DataLoader(val_data)
 
-loss_fn = torch.nn.MSELoss().to(device)
+loss_fn = torch.nn.L1Loss().to(device)
 
 train(model, optimizer, train_loader, val_loader, loss_fn, epochs=config["EPOCHS"], device=device)

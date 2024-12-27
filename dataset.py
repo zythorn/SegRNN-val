@@ -45,14 +45,19 @@ class ETTDataset(torch.utils.data.Dataset):
     def __len__(self) -> int:
         return self.data.shape[0] - self.input_window - self.output_window
     
-    def __getitem__(self, idx: int) -> list[list[torch.Tensor, torch.Tensor]]:
-        item = []
+    def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
+        data_input, data_output = [], []
         for column in self.data.columns:
+            print(column)
             channel_data = torch.tensor(self.data[column].values)
             channel_input, channel_output = self._roll_window(channel_data, idx)
-            item.append([channel_input.float(), channel_output.float()])
+            data_input.append(channel_input.float())
+            data_output.append(channel_output.float())
         
-        return item
+        data_input = torch.stack(data_input)
+        data_output = torch.stack(data_output)
+
+        return data_input, data_output
 
 if __name__ == "__main__":
     data = ETTDataset("h1", "test", 32, 64)

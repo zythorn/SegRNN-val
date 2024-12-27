@@ -13,27 +13,27 @@ def train(model: torch.nn.Module,
     for epoch in tqdm(range(epochs)):
         avg_train_loss = 0.
         model.train()
-        for data_window in tqdm(train_loader):
+        for data_in, data_out in tqdm(train_loader):
             optimizer.zero_grad()
-            for channel, channel_data in enumerate(data_window):
-                data_in, data_out = channel_data[0].to(device), channel_data[1].to(device)
-                data_pred = model(data_in, channel)
 
-                loss = loss_fn(data_pred, data_out)
-                loss.backward()
-                
-                avg_train_loss += loss.cpu().item()
+            data_pred = model(data_in)
+
+            loss = loss_fn(data_pred, data_out.squeeze())
+            loss.backward()
+            
+            avg_train_loss += loss.cpu().item()
+            print(loss)
+
             optimizer.step()
 
         avg_val_loss = 0.
         model.eval()
-        for data_window in tqdm(val_loader):
-            for channel, channel_data in enumerate(data_window):
-                data_in, data_out = channel_data[0].to(device), channel_data[1].to(device)
-                data_pred = model(data_in, channel)
+        for data_in, data_out in tqdm(val_loader):
+            data_pred = model(data_in)
 
-                loss = loss_fn(data_pred, data_out)
-                
-                avg_val_loss += loss.cpu().item()
+            loss = loss_fn(data_pred, data_out)
+            
+            avg_val_loss += loss.cpu().item()
+            print(loss)
 
         print(f"Epoch {epoch}: train loss {(avg_train_loss / len(train_loader)):.6f}, validation loss {(avg_val_loss / len(val_loader)):.6f}.")

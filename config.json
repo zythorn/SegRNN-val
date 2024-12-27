@@ -1,7 +1,7 @@
 {
     "CHANNELS": 7,
     "LOOKBACK": 720,
-    "HORIZON": 720,
+    "HORIZON": 96,
     "SEGMENT_LENGTH": 48,
     "HIDDEN_DIM": 512,
     "EPOCHS": 30,

@@ -12,7 +12,7 @@ class SegmentProjection(nn.Module):
                                         nn.ReLU())
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = x.reshape((self.num_segments, self.window_length))
+        x = x.reshape((-1, self.num_segments, self.window_length))
         return self.projection(x)
 
 class PositionalEmbedding(nn.Module):
@@ -21,12 +21,16 @@ class PositionalEmbedding(nn.Module):
 
         half_dim = hidden_dim // 2
 
-        self.relative_embedding = nn.Embedding(num_segments, half_dim)
-        self.channel_embedding = nn.Embedding(num_channels, hidden_dim - half_dim)
+        self.num_segments = num_segments
+        self.num_channels = num_channels
+        # self.relative_embedding = nn.Embedding(num_segments, half_dim)
+        # self.channel_embedding = nn.Embedding(num_channels, hidden_dim - half_dim)
+        self.relative_embedding = nn.Parameter(torch.randn(num_segments, half_dim))
+        self.channel_embedding = nn.Parameter(torch.randn(num_channels, hidden_dim - half_dim))
 
-    def forward(self, positions: torch.Tensor, channel: torch.Tensor) -> torch.Tensor:
-        re = self.relative_embedding(positions)
-        ce = self.channel_embedding(channel)
+    def forward(self) -> torch.Tensor:
+        re = torch.tile(self.relative_embedding.unsqueeze(dim=0), (self.num_channels, 1, 1))
+        ce = torch.tile(self.channel_embedding.unsqueeze(dim=1), (1, self.num_segments, 1))
 
         return torch.cat((re, ce), dim=-1)
     
@@ -37,12 +41,12 @@ class SequenceRecovery(nn.Module):
         self.num_segments = num_segments
         self.window_length = window_length
 
-        self.projection = nn.Sequential(nn.Dropout(0.1),
+        self.projection = nn.Sequential(nn.Dropout(0.5),
                                         nn.Linear(hidden_dim, window_length))
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.projection(x)
-        return x.flatten()
+        return x.flatten(start_dim=1)
 
 
 class SegRNN(nn.Module):
@@ -64,32 +68,30 @@ class SegRNN(nn.Module):
         self.sequence_recovery = SequenceRecovery(self.num_segments_dec, window_length, hidden_dim)
         self.rnn = nn.GRU(hidden_dim, hidden_dim)
 
-    def forward(self, x: torch.Tensor, channel: int) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x = x.flatten(end_dim=1)
         # Instance normalization is performed:
         # x[1:L] = x[1:L] - x[L]
         # y_pred[1:L] = y_pred[1:L] + x[L]
-        x_last = x[-1]
+        x_last = x[:, -1].unsqueeze(dim=-1)
 
         # Encoding
         x = self.segment_projection(x - x_last)
+        x = x.movedim(0, 1)
         _, hidden_state = self.rnn(x)
 
         # Decoding
-        positions = torch.arange(self.num_segments_dec)
-        channel = torch.ones(self.num_segments_dec, dtype=int) * channel
-        pos_encodings = self.positional_embedding(positions, channel)
+        pos_encodings = self.positional_embedding()
+        pos_encodings = torch.reshape(pos_encodings, (1, -1, self.hidden_dim))
+        hidden_state = torch.tile(hidden_state, (1, self.num_segments_dec, 1))
 
-        # Add an extra dimension to send data as batched input;
-        # necessary for preserving the hidden state between steps.
-        pos_encodings = torch.unsqueeze(pos_encodings, dim=0)
-        hidden_state = torch.tile(torch.unsqueeze(hidden_state, dim=1), (self.num_segments_dec, 1))
-
-        _, x = self.rnn(pos_encodings, hidden_state)
-        x = self.sequence_recovery(x.squeeze())
+        x, _ = self.rnn(pos_encodings, hidden_state)
+        x = torch.reshape(x, (-1, self.num_segments_dec, self.hidden_dim))
+        x = self.sequence_recovery(x)
         return x + x_last
     
 if __name__ == "__main__":
-    model = SegRNN(2, 32, 64, 4, 128)
-    x = torch.randn(32)
-    y = model(x, 1)
+    model = SegRNN(7, 32, 64, 4, 128)
+    x = torch.randn(7, 32)
+    y = model(x)
     print(y.shape)
