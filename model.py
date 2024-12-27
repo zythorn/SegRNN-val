@@ -76,26 +76,39 @@ class SegRNN(nn.Module):
         Args:
             x (torch.Tensor): input of shape [B, C, L] 
         """
+        print(x.shape)
         x = x.flatten(end_dim=1) # [BC, L]
         # Instance normalization is performed:
         # x[1:L] = x[1:L] - x[L]
         # y_pred[1:L] = y_pred[1:L] + x[L]
+        print(x.shape)
         x_last = x[..., -1].unsqueeze(dim=-1)
+        print(x.shape)
 
         # Encoding
         x = self.segment_projection(x - x_last) # [BC, N, D]
+        print(x.shape)
         x = x.movedim(0, 1) # [N, BC, D]
+        print(x.shape)
         _, hidden_state = self.rnn(x) # [1, BC, D]
+        print(x.shape)
 
         # Decoding
         pos_encodings = self.positional_embedding() # [C, M, D]
+        print(x.shape)
         pos_encodings = torch.reshape(pos_encodings, (1, -1, self.hidden_dim)) # [1, CM, D]
+        print(x.shape)
         pos_encodings = torch.tile(pos_encodings, (1, self.batch_size, 1)) # [1, BCM, D]
+        print(x.shape)
         hidden_state = torch.tile(hidden_state, (1, self.num_segments_dec, 1)) # [1, BCM, D]
+        print(x.shape)
 
         x, _ = self.rnn(pos_encodings, hidden_state) # [1, BCM, D]
+        print(x.shape)
         x = torch.reshape(x, (-1, self.num_segments_dec, self.hidden_dim)) # [BC, M, W]
+        print(x.shape)
         x = self.sequence_recovery(x) # [BC, H]
+        print(x.shape)
         # print(x.shape, x_last.shape)
         return (x + x_last).reshape(self.batch_size, self.num_channels, -1) # [B, C, H]
     
