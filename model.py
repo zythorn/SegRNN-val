@@ -65,8 +65,13 @@ class SegRNN(nn.Module):
         self.rnn = nn.GRU(hidden_dim, hidden_dim)
 
     def forward(self, x: torch.Tensor, channel: int) -> torch.Tensor:
+        # Instance normalization is performed:
+        # x[1:L] = x[1:L] - x[L]
+        # y_pred[1:L] = y_pred[1:L] + x[L]
+        x_last = x[-1]
+
         # Encoding
-        x = self.segment_projection(x)
+        x = self.segment_projection(x - x_last)
         _, hidden_state = self.rnn(x)
 
         # Decoding
@@ -79,9 +84,9 @@ class SegRNN(nn.Module):
         pos_encodings = torch.unsqueeze(pos_encodings, dim=0)
         hidden_state = torch.tile(torch.unsqueeze(hidden_state, dim=1), (self.num_segments_dec, 1))
 
-        x, _ = self.rnn(pos_encodings, hidden_state)
+        _, x = self.rnn(pos_encodings, hidden_state)
         x = self.sequence_recovery(x.squeeze())
-        return x
+        return x + x_last
     
 if __name__ == "__main__":
     model = SegRNN(2, 32, 64, 4, 128)
