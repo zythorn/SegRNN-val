@@ -25,8 +25,8 @@ scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
 train_data = ETTDataset("h1", "train", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
 val_data = ETTDataset("h1", "val", input_window=config["LOOKBACK"], output_window=config["HORIZON"])
 
-train_loader = torch.utils.data.DataLoader(train_data, batch_size=config["BATCH_SIZE"])
-val_loader = torch.utils.data.DataLoader(val_data, batch_size=config["BATCH_SIZE"])
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=config["BATCH_SIZE"], drop_last=True)
+val_loader = torch.utils.data.DataLoader(val_data, batch_size=config["BATCH_SIZE"], drop_last=True)
 
 loss_fn = torch.nn.L1Loss().to(device)
 
