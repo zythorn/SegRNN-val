@@ -39,25 +39,6 @@ def train(model: torch.nn.Module,
         scheduler.step()
 
         print(f"Epoch {epoch}: train loss {(avg_train_loss / len(train_loader)):.6f}, validation loss {(avg_val_loss / len(val_loader)):.6f}.")
-
-def eval(model: torch.nn.Module,
-         test_loader: torch.utils.data.DataLoader,
-         criteria: list[torch.nn.Module],
-         device: torch.device) -> torch.Tensor:
-    
-    print("Evaluating model...")
-    scores = torch.zeros((len(criteria)))
-
-    model.eval()
-    with torch.no_grad():
-        for data_in, data_out in tqdm(test_loader):
-            data_in, data_out = data_in.to(device), data_out.to(device)
-            data_pred = model(data_in)
-
-            for idx, criterion in enumerate(criteria):
-                scores[idx] += criterion(data_pred, data_out).cpu().item()
-
-    return scores / len(test_loader)
             
 
             

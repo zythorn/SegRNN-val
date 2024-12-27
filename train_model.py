@@ -3,7 +3,8 @@ import torch
 
 from model import SegRNN
 from dataset import ETTDataset
-from train import train, eval
+from train import train
+from eval import eval
 
 with open("config.json", 'r') as config_file:
     config = json.load(config_file)
@@ -39,4 +40,4 @@ test_data = ETTDataset("h1", "test", input_window=config["LOOKBACK"], output_win
 test_loader = torch.utils.data.DataLoader(test_data, batch_size=config["BATCH_SIZE"], drop_last=True)
 
 scores = eval(model, test_loader, criteria, device)
-print(", ".join([f"{criterion_name} = {score}" for (criterion_name, score) in zip(criteria_names, scores)]))
+print(", ".join([f"{criterion_name} = {score:.4f}" for (criterion_name, score) in zip(criteria_names, scores)]))
