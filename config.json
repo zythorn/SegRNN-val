@@ -1,10 +1,13 @@
 {
+    "DATASET": "h2",
     "CHANNELS": 7,
     "LOOKBACK": 720,
     "HORIZON": 720,
     "SEGMENT_LENGTH": 48,
     "HIDDEN_DIM": 512,
+    "RNN_LAYERS": 1,
     "EPOCHS": 30,
     "BATCH_SIZE": 256,
-    "DEVICE": "cuda"
+    "DEVICE": "cuda",
+    "NUM_WORKERS": 4
 }

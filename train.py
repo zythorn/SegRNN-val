@@ -9,7 +9,7 @@ def train(model: torch.nn.Module,
           loss_fn: torch.nn.Module,
           epochs: int,
           device: torch.device) -> None:
-    
+
     best_val_loss: float = 1e8
     patience: int = 10
 
@@ -25,7 +25,7 @@ def train(model: torch.nn.Module,
 
             loss = loss_fn(data_pred, data_out.squeeze())
             loss.backward()
-            
+
             avg_train_loss += loss.cpu().item()
 
             optimizer.step()
@@ -36,7 +36,7 @@ def train(model: torch.nn.Module,
             data_pred = model(data_in.to(device)).cpu()
 
             loss = loss_fn(data_pred, data_out.squeeze())
-            
+
             avg_val_loss += loss.cpu().item()
 
         scheduler.step()
@@ -52,7 +52,6 @@ def train(model: torch.nn.Module,
             print("Ran out of patience. Early stopping...")
             break
 
-        print(f"Epoch {epoch}: train loss {(avg_train_loss / len(train_loader)):.6f}, validation loss {val_loss:.6f}.")
-            
-
-            
+        print(f"Epoch {epoch}: train loss {(avg_train_loss / len(train_loader)):.6f}, "\
+              f"validation loss {val_loss:.6f}.")
+          

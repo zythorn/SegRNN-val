@@ -1,13 +1,17 @@
+import os
 import torch
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-def eval(model: torch.nn.Module,
-         test_loader: torch.utils.data.DataLoader,
-         criteria: list[torch.nn.Module],
-         device: torch.device) -> torch.Tensor:
-    
+def evaluate(model: torch.nn.Module,
+             test_loader: torch.utils.data.DataLoader,
+             criteria: list[torch.nn.Module],
+             device: torch.device,
+             plot_graphs: bool=True) -> torch.Tensor:
+
     print("Evaluating model...")
+    data_in = torch.empty((0))
+    data_out = torch.empty((0))
     scores = torch.zeros((len(criteria)))
 
     model.eval()
@@ -19,12 +23,22 @@ def eval(model: torch.nn.Module,
             for idx, criterion in enumerate(criteria):
                 scores[idx] += criterion(data_pred, data_out).cpu().item()
 
-    for i in range(data_out.shape[1]):
-        plt.plot(torch.arange(720), data_in[5, i].cpu(), label='Input')
-        plt.plot(torch.arange(720, 1440), data_out[5, i].cpu(), label='Ground Truth')
-        plt.plot(torch.arange(720, 1440), data_pred[5, i].cpu(), label='Predicted')
-        plt.legend()
-        plt.savefig(f"plot{i}.png")
-        plt.close()
+        if plot_graphs:
+            if not os.path.exists("plots/"):
+                os.makedirs("plots/")
+            data_in = data_in.cpu()
+            data_out = data_out.cpu()
+            data_pred = data_pred.cpu()
+
+            in_bound = data_in.shape[-1]
+            out_bound = in_bound + data_out.shape[-1]
+
+            for i in range(data_out.shape[1]):
+                plt.plot(torch.arange(in_bound), data_in[0, i], label='Input')
+                plt.plot(torch.arange(in_bound, out_bound), data_out[0, i], label='Ground Truth')
+                plt.plot(torch.arange(in_bound, out_bound), data_pred[0, i], label='Predicted')
+                plt.legend()
+                plt.savefig(f"plots/plot{i}.png")
+                plt.close()
 
     return scores / len(test_loader)

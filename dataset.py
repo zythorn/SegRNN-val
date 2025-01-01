@@ -45,14 +45,16 @@ class ETTDataset(torch.utils.data.Dataset):
         data_values = scaler.transform(data.values)
         return pd.DataFrame(data_values, index=data.index, columns=data.columns)
 
-    def _roll_window(self, data_column: torch.Tensor, start: int) -> tuple[torch.Tensor, torch.Tensor]:
+    def _roll_window(self, data_column: torch.Tensor, 
+                     start: int) -> tuple[torch.Tensor, torch.Tensor]:
         input_data = data_column[start:(start + self.input_window)]
-        output_data = data_column[(start + self.input_window):(start + self.input_window + self.output_window)]
+        output_data = data_column[(start + self.input_window):
+                                  (start + self.input_window + self.output_window)]
         return input_data, output_data
 
     def __len__(self) -> int:
         return self.data.shape[0] - self.input_window - self.output_window
-    
+
     def __getitem__(self, idx: int) -> tuple[torch.Tensor, torch.Tensor]:
         data_input, data_output = [], []
         for column in self.data.columns:
@@ -60,14 +62,14 @@ class ETTDataset(torch.utils.data.Dataset):
             channel_input, channel_output = self._roll_window(channel_data, idx)
             data_input.append(channel_input.float())
             data_output.append(channel_output.float())
-        
+
         data_input = torch.stack(data_input)
         data_output = torch.stack(data_output)
 
         return data_input, data_output
 
 if __name__ == "__main__":
-    data = ETTDataset("h1", "test", 32, 64)
-    for x in data[0][0]:
+    sample_data = ETTDataset("h1", "test", 32, 64)
+    for x in sample_data[0][0]:
         print(x.shape)
-    print(f"{len(data)=}")
+    print(f"{len(sample_data)=}")
