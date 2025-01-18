@@ -8,7 +8,20 @@ def evaluate(model: torch.nn.Module,
              criteria: list[torch.nn.Module],
              device: torch.device,
              plot_graphs: bool=True) -> torch.Tensor:
+    """
+    Evaluates the model by the specified criteria.
+    Optionally plots a sample prediction for each channel ans saves them as .png files.
 
+    Args:
+        model: model to evaluate.
+        test_loader: dataloader for the test data.
+        criteria: list of criteria to evaluate the model with.
+        device: device to use for evaluation.
+        plot_graphs: whether to plot graphs of prediction samples.
+
+    Returns:
+        a tensor containing values of specified criteria.
+    """
     print("Evaluating model...")
     data_in = torch.empty((0))
     data_out = torch.empty((0))

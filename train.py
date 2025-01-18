@@ -9,7 +9,20 @@ def train(model: torch.nn.Module,
           loss_fn: torch.nn.Module,
           epochs: int,
           device: torch.device) -> None:
+    """
+    Train and validate the model for the specified number of epochs.
+    Logs the training procedure in the terminal.
 
+    Args:
+        model: model to train and validate.
+        optimizer: optimizer to use for parameter optimization.
+        scheduler: learning rate scheduler.
+        train_loader: dataloader for the training data.
+        val_loader: dataloader for the validation data.
+        loss_fn: training objective function.
+        epochs: number of epochs to train for.
+        device: device to use for computations.
+    """
     best_val_loss: float = 1e8
     patience: int = 10
 
@@ -54,4 +67,3 @@ def train(model: torch.nn.Module,
 
         print(f"Epoch {epoch}: train loss {(avg_train_loss / len(train_loader)):.6f}, "\
               f"validation loss {val_loss:.6f}.")
-          

@@ -7,7 +7,31 @@ from sklearn.preprocessing import StandardScaler
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
 class ETTDataset(torch.utils.data.Dataset):
+    """
+    Dataset class for loading and preprocessing ETT data. 
+    Data can be downloaded from: https://github.com/zhouhaoyi/ETDataset.
+
+    Normalizes the data and splits it into train/validation/test sets.
+    First 12 moths are used for training, next 4 months for validation and the rest for testing.
+    Note that this is different from the 12/4/4 split most commonly used in literature.
+
+    Attributes:
+        data (pd.DataFrame): split of the preprocessed data subset.
+        input_window (int): length of a sequence used as an input of a model; lookback.
+        output_window (int): liength of a sequence predicted by the model; horizon.
+    """
     def __init__(self, subset: str, split: str, input_window: int, output_window: int):
+        """
+        Loads the data, scales the values based on the training split, then stores the required
+        transformed slplit in the data attribute. Stores input_window and output_window in 
+        respective attributes.
+
+        Args:
+            subset: subset of the ETT dataset. One of 'h1', 'h2', 'm1' or 'm2'.
+            split: whether to return the train, validation or test dast split.
+            input_window: length of a sequence used as an input of a model; lookback.
+            output_window: liength of a sequence predicted by the model; horizon.
+        """
         super().__init__()
 
         path_to_data = Path(f"data/ETT{subset}.csv")
