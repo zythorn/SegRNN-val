@@ -1,5 +1,10 @@
 # SegRNN: Validation and Additional Experiments
 This repository implements the SegRNN algorithm from the 2023 paper "Segment Recurrent Neural Network for Long-Term Time Series Forecasting" by Lin S. et al ([arXiv](https://arxiv.org/abs/2308.11200)). This project is done as a final assignment for MIPT Time Series Analysis (fall-24) course.
+## Installation
+The project was written and tested in Python 3.10.12. To install necessary libraries, run
+```bash
+pip install -r requirements.txt
+```
 ## Quickstart
 To run the training process and evaluate the model, locate the ETT data in the `data/` folder then run
 ```bash

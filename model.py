@@ -232,6 +232,6 @@ class SegRNN(nn.Module):
 
 if __name__ == "__main__":
     model = SegRNN(7, 32, 64, 4, 128)
-    x_sample = torch.randn(7, 32)
+    x_sample = torch.randn(1, 7, 32)
     y_sample = model(x_sample)
     print(y_sample.shape)
