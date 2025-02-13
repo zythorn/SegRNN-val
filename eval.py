@@ -3,11 +3,12 @@ import torch
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
+
 def evaluate(model: torch.nn.Module,
              test_loader: torch.utils.data.DataLoader,
              criteria: list[torch.nn.Module],
              device: torch.device,
-             plot_graphs: bool=True) -> torch.Tensor:
+             plot_graphs: bool = True) -> torch.Tensor:
     """
     Evaluates the model by the specified criteria.
     Optionally plots a sample prediction for each channel ans saves them as .png files.

@@ -6,9 +6,10 @@ from sklearn.preprocessing import StandardScaler
 
 TIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 
+
 class ETTDataset(torch.utils.data.Dataset):
     """
-    Dataset class for loading and preprocessing ETT data. 
+    Dataset class for loading and preprocessing ETT data.
     Data can be downloaded from: https://github.com/zhouhaoyi/ETDataset.
 
     Normalizes the data and splits it into train/validation/test sets.
@@ -23,7 +24,7 @@ class ETTDataset(torch.utils.data.Dataset):
     def __init__(self, subset: str, split: str, input_window: int, output_window: int):
         """
         Loads the data, scales the values based on the training split, then stores the required
-        transformed slplit in the data attribute. Stores input_window and output_window in 
+        transformed slplit in the data attribute. Stores input_window and output_window in
         respective attributes.
 
         Args:
@@ -69,7 +70,7 @@ class ETTDataset(torch.utils.data.Dataset):
         data_values = scaler.transform(data.values)
         return pd.DataFrame(data_values, index=data.index, columns=data.columns)
 
-    def _roll_window(self, data_column: torch.Tensor, 
+    def _roll_window(self, data_column: torch.Tensor,
                      start: int) -> tuple[torch.Tensor, torch.Tensor]:
         input_data = data_column[start:(start + self.input_window)]
         output_data = data_column[(start + self.input_window):
@@ -91,6 +92,7 @@ class ETTDataset(torch.utils.data.Dataset):
         data_output = torch.stack(data_output)
 
         return data_input, data_output
+
 
 if __name__ == "__main__":
     sample_data = ETTDataset("h1", "test", 32, 64)

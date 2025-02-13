@@ -1,6 +1,7 @@
 import torch
 from tqdm import tqdm
 
+
 def train(model: torch.nn.Module,
           optimizer: torch.optim.Optimizer,
           scheduler: torch.optim.lr_scheduler._LRScheduler,
@@ -65,5 +66,5 @@ def train(model: torch.nn.Module,
             print("Ran out of patience. Early stopping...")
             break
 
-        print(f"Epoch {epoch}: train loss {(avg_train_loss / len(train_loader)):.6f}, "\
+        print(f"Epoch {epoch}: train loss {(avg_train_loss / len(train_loader)):.6f}, "
               f"validation loss {val_loss:.6f}.")

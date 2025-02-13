@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 
+
 class SegmentProjection(nn.Module):
     """
     Module that splits the input tensor into segments of specified length,
@@ -42,9 +43,10 @@ class SegmentProjection(nn.Module):
         x = x.reshape((-1, self.num_segments, self.window_length))
         return self.projection(x)
 
+
 class PositionalEmbedding(nn.Module):
     """
-    Module that creates positional embeddings. Each embedding is a concatenation 
+    Module that creates positional embeddings. Each embedding is a concatenation
     of a relativae positional embedding based on the position being predicted, and
     a channel embedding based on which channel the data is from originally.
 
@@ -57,7 +59,7 @@ class PositionalEmbedding(nn.Module):
     def __init__(self, num_segments: int, num_channels: int, hidden_dim: int):
         """
         Stores num_segments and num_channels in the respective attributes. Creates look-up tables
-        for relative positional embeddings and channels embeddings 
+        for relative positional embeddings and channels embeddings
         of shape (num_segments, hidden_dim // 2) and (num_channels, hidden_dim - hidden_dim // 2)
         respectively.
 
@@ -89,6 +91,7 @@ class PositionalEmbedding(nn.Module):
 
         return torch.cat((re, ce), dim=-1)
 
+
 class SequenceRecovery(nn.Module):
     """
     Module that applies dropout and linearly transforms a sequence of segments,
@@ -101,7 +104,7 @@ class SequenceRecovery(nn.Module):
     """
     def __init__(self, num_segments: int, window_length: int, hidden_dim: int):
         """
-        Stores num_segments and window_length into respective attributes. Initializes 
+        Stores num_segments and window_length into respective attributes. Initializes
         the projection module with [ Dropout[ 0.5 ] >>> Linear [hidden_dim -> window_length] ].
 
         Args:
@@ -156,7 +159,7 @@ class SegRNN(nn.Module):
         rnn (torch.nn.Module): RNN backbone for encoding and decoding sequences.
     """
     def __init__(self, num_channels: int, lookback: int, horizon: int,
-                 window_length: int, hidden_dim: int, rnn_layers: int=1):
+                 window_length: int, hidden_dim: int, rnn_layers: int = 1):
         """
         Stores hidden_dim and num_channels arguments into respective attributes.
         Calculates num_segments_enc and num_segments_dec attributes and stores them.
@@ -206,29 +209,30 @@ class SegRNN(nn.Module):
             tensor of predictions of shape (batch size, channels, horizon).
         """
         batch_size = x.shape[0]
-        x = x.flatten(end_dim=1) # [BC, L]
+        x = x.flatten(end_dim=1)  # [BC, L]
         # Instance normalization is performed:
         # x[1:L] = x[1:L] - x[L]
         # y_pred[1:H] = y_pred[1:H] + x[L]
         x_last = x[..., -1:]
 
         # Encoding
-        x = self.segment_projection(x - x_last) # [BC, N, D]
-        x = x.movedim(0, 1) # [N, BC, D]
-        _, hidden_state = self.rnn(x) # [1, BC, D]
+        x = self.segment_projection(x - x_last)  # [BC, N, D]
+        x = x.movedim(0, 1)  # [N, BC, D]
+        _, hidden_state = self.rnn(x)  # [1, BC, D]
 
         # Decoding
-        pos_encodings = self.positional_embedding() # [C, M, D]
-        pos_encodings = torch.reshape(pos_encodings, (1, -1, self.hidden_dim)) # [1, CM, D]
-        pos_encodings = torch.tile(pos_encodings, (1, batch_size, 1)) # [1, BCM, D]
+        pos_encodings = self.positional_embedding()  # [C, M, D]
+        pos_encodings = torch.reshape(pos_encodings, (1, -1, self.hidden_dim))  # [1, CM, D]
+        pos_encodings = torch.tile(pos_encodings, (1, batch_size, 1))  # [1, BCM, D]
         hidden_state = torch.repeat_interleave(hidden_state,
-                                               self.num_segments_dec, dim=1) # [1, BCM, D]
+                                               self.num_segments_dec, dim=1)  # [1, BCM, D]
 
-        x, _ = self.rnn(pos_encodings, hidden_state) # [1, BCM, D]
-        x = torch.reshape(x, (-1, self.num_segments_dec, self.hidden_dim)) # [BC, M, D]
-        x = self.sequence_recovery(x) # [BC, H]
+        x, _ = self.rnn(pos_encodings, hidden_state)  # [1, BCM, D]
+        x = torch.reshape(x, (-1, self.num_segments_dec, self.hidden_dim))  # [BC, M, D]
+        x = self.sequence_recovery(x)  # [BC, H]
         # print(x.shape, x_last.shape)
-        return (x + x_last).reshape(batch_size, self.num_channels, -1) # [B, C, H]
+        return (x + x_last).reshape(batch_size, self.num_channels, -1)  # [B, C, H]
+
 
 if __name__ == "__main__":
     model = SegRNN(7, 32, 64, 4, 128)
