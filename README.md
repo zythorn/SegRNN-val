@@ -71,12 +71,12 @@ In both cases results compare relatively well, with differences between implemen
 ### Additional experiments
 Multilayered RNN is a model where each element of the sequence passes throught multiple consecutive RNN cells instead of just one. Each cell has a separate hidden state used for computation.
 
-SegRNN originally operates with a single RNN layer to provide a low computational cost. This, however, raises the question of whether the results can be improved by [increasing the number of layers](https://raw.githubusercontent.com/unccv/deep_learning/b39f2fccec30402662d1447067ad4624702bc7a9/graphics/cartoon-01.png).
+SegRNN originally operates with a single RNN layer to provide a low computational cost. This, however, raises the question of whether the results can be improved by [increasing the number of RNN layers](https://raw.githubusercontent.com/unccv/deep_learning/b39f2fccec30402662d1447067ad4624702bc7a9/graphics/cartoon-01.png).
 
-The models with $N \in \{1, 2, 4, 8\}$ RNN layer backbones were trained on the ETTm2 dataset with $L = 720$ and $H = 720$, mostly following the experimental setup from the paper. Results are presented below.
+The models with $N \in \{1, 2, 4, 8\}$ layer RNN backbones were trained on the ETTm2 dataset using $L = 720$ and $H = 720$ and mostly following the experimental setup from the paper. Results are presented below.
 
 |Number $N$ of RNN layers|1|2|4|8|
 |:---|:-:|:-:|:-:|:-:|
 |Error (MSE / MAE)|0.287 / 0.360|0.291 / 0.359|0.307 / 0.366|0.320 / 0.384|
 
-Increasing the number of layers above 2 seems to negatively affect performance, most likely due to overfitting. However, a model with a two-layer RNN backbone achieved a lower MAE than a one-layer option. Additional experiments are needed to see whether this result is consistent.
+Increasing the number of layers above 2 appears to negatively affect performance, most likely due to overfitting. However, a model with a two-layer RNN backbone achieved a lower MAE than a one-layer option. Additional experiments are needed to see whether this result is consistent.
