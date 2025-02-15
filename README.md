@@ -5,6 +5,7 @@ The project was written and tested in Python 3.10.12. To install necessary libra
 ```bash
 pip install -r requirements.txt
 ```
+Using GPU for training requires CUDA drivers of version 12.
 ## Quickstart
 To run the training process and evaluate the model, locate the ETT data in the `data/` folder then run
 ```bash
@@ -52,3 +53,30 @@ This implementation has following limitations that may or may not be adressed in
 * only supports `L1Loss` as the loss function for training;
 * does not support RMF;
 * other potential limitations that I am unaware of.
+## Experimental Results
+### Paper verification
+Proposed SegRNN algorithm was trained and tested on the ETT dataset family. Below are the tables comparing results from the paper to the results I was able to achieve. The numbers reported are the Mean Squared Error and the Mean Absolute Error (MSE / MAE) between predicted and true values (after normalization).
+#### Setup 1: $L = 720, H = 96$
+|ETT subset|h1|h2|m1|m2|
+|:---|:-:|:-:|:-:|:-:|
+|Original paper|0.341 / 0.376|0.263 / 0.320|0.282 / 0.335|0.158 / 0.241|
+|This repository|0.446 / 0.446|0.230 / 0.317|0.348 / 0.378|0.140 / 0.239|
+#### Setup 2: $L = 720, H = 720$
+|ETT subset|h1|h2|m1|m2|
+|:---|:-:|:-:|:-:|:-:|
+|Original paper|0.434 / 0.447|0.394 / 0.424|0.410 / 0.418|0.330 / 0.366|
+|This repository|0.697 / 0.599|0.434 / 0.454|0.523 / 0.491|0.287 / 0.360|
+
+In both cases results compare relatively well, with differences between implementations being most likely due to certain simplifications made ([see the corresponding section](#limitations)).
+### Additional experiments
+Multilayered RNN is a model where each element of the sequence passes throught multiple consecutive RNN cells instead of just one. Each cell has a separate hidden state used for computation.
+
+SegRNN originally operates with a single RNN layer to provide a low computational cost. This, however, raises the question of whether the results can be improved by [increasing the number of layers](https://raw.githubusercontent.com/unccv/deep_learning/b39f2fccec30402662d1447067ad4624702bc7a9/graphics/cartoon-01.png).
+
+The models with $N \in \{1, 2, 4, 8\}$ RNN layer backbones were trained on the ETTm2 dataset with $L = 720$ and $H = 720$, mostly following the experimental setup from the paper. Results are presented below.
+
+|Number $N$ of RNN layers|1|2|4|8|
+|:---|:-:|:-:|:-:|:-:|
+|Error (MSE / MAE)|0.287 / 0.360|0.291 / 0.359|0.307 / 0.366|0.320 / 0.384|
+
+Increasing the number of layers above 2 seems to negatively affect performance, most likely due to overfitting. However, a model with a two-layer RNN backbone achieved a lower MAE than a one-layer option. Additional experiments are needed to see whether this result is consistent.
